@@ -1,23 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useReducer } from "react";
+import "./App.css";
+import { store } from "./store";
 
 function App() {
+  const [, forseUpdate] = useReducer((x) => x + 1, 0);
+
+  useEffect(() => {
+    const unsubscribe = store.subscribe(() => {
+      forseUpdate();
+    });
+
+    return unsubscribe;
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      counter {store.getState().counter}
+      <button onClick={() => store.dispatch({ type: "decrement" })}>
+        decrement
+      </button>
+      <button onClick={() => store.dispatch({ type: "increment" })}>
+        increment
+      </button>
     </div>
   );
 }
