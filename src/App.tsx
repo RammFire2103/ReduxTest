@@ -1,6 +1,12 @@
-import { useReducer, useEffect } from "react";
+import { useReducer, useEffect, useRef } from "react";
 import "./App.css";
-import { CounterID, DecrementAction, IncrementAction, store } from "./store";
+import {
+  CounterID,
+  DecrementAction,
+  IncrementAction,
+  store,
+  AppState,
+} from "./store";
 
 function App() {
   return (
@@ -15,20 +21,34 @@ function App() {
   );
 }
 
+const selectCounter = (state: AppState, CounterID: CounterID) =>
+  state.counters[CounterID];
+
 export function Counter({ counterID }: { counterID: CounterID }) {
+  console.log("render counter", counterID);
   const [, forseUpdate] = useReducer((x) => x + 1, 0);
+
+  const lastStateRef = useRef<ReturnType<typeof selectCounter>>();
 
   useEffect(() => {
     const unsubscribe = store.subscribe(() => {
-      forseUpdate();
+      const currentState = selectCounter(store.getState(), counterID);
+      const prevState = lastStateRef.current;
+
+      if (currentState !== prevState) {
+        forseUpdate();
+      }
+
+      lastStateRef.current = currentState;
     });
 
     return unsubscribe;
   }, []);
 
+  const counterState = selectCounter(store.getState(), counterID);
   return (
     <div className="card">
-      counter {store.getState().counters[counterID]?.counter}
+      counter {counterState?.counter}
       <button
         onClick={() =>
           store.dispatch({
